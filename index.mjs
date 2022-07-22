@@ -13,34 +13,43 @@ const ctcAlice = accAlice.contract(backend);
 
 console.log('Starting backends...');
 
-let done = false;
 const users = [];
+
+let attachers = 0;
 
 const startBobs = async() => {
     const newBob = async(who) => {
-        const acc = await stdlib.newTestAccounts(startingBalance);
+        const acc = await stdlib.newTestAccount(startingBalance);
         const ctc = acc.contract(backend, ctcAlice.getInfo());
-        users.push(acc.getAddress());
+        while(attachers < 5) {
+            console.log(`${who} is ready`);
+            attachers += 1;
+            console.log(`New attacher added, Total attachers:`, attachers);
+            users.push(acc.getAddress());
+            await stdlib.wait(1);
+        }
+        console.log('New User tried to attach to the contract but was rejected: maximum of 5 attachers reached');
+        console.log(`Users:`, users);
+        process.exit(0);
         };
-        
+
         newBob('Bob1');
         newBob('Bob2');
         newBob('Bob3');
-        while(!done) {
-            await stdlib.wait(1);
-        }
-
-        console.log(users);
+        newBob('Bob4');
+        newBob('Bob5');
+        newBob('Bob6');
+        newBob('Bob7');
+        newBob('Bob8');
+        newBob('Bob9');
 }
 
 
 await ctcAlice.p.Alice({
     // Alice Interact Object
     ready: () => {
-        console.log('Alice is ready');
+        console.log('Alice is ready to accept Attachers');
         startBobs();
     },
 })
 
-console.log('Goodbye, Alice and Bobs!');
-done = true;
